@@ -8,6 +8,22 @@ class BiblioController {
             res.json(result);
         } 
 
+    async getOne(req, res) {
+        const id = parseInt(req.params.id, 10);
+        
+        try {
+            const [result] = await pool.query('SELECT * FROM libros WHERE id = ?', [id]);
+            
+            if (result.length === 0) {
+                return res.status(404).json({ message: 'Libro no encontrado' });
+            }
+            
+            res.json(result[0]);
+        } catch (error) {
+            res.status(500).json({ message: 'Error en el servidor', error });
+        }
+    }
+
     async add(req, res) {
         const libro = req.body;
         const [result] = await pool.query(
