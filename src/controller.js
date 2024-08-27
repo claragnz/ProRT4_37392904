@@ -26,14 +26,32 @@ class BiblioController {
 
     async add(req, res) {
         const libro = req.body;
-        const [result] = await pool.query(
+
+        // Validar atributos
+        if (!libro.nombre || !libro.autor || !libro.categoria || !libro['año-publicacion'] || !libro.ISBN) {
+            return res.status(400).json({ message: 'Faltan atributos requeridos' });
+        }
+
+        // Validar ISBN
+        if (!/^\d{13}$/.test(libro.ISBN)) {
+            return res.status(400).json({ message: 'El ISBN debe tener 13 dígitos numéricos' });
+        }
+
+            const [result] = await pool.query(
             `INSERT INTO libros(nombre, autor, categoria, \`año-publicacion\`, ISBN) VALUES(?,?,?,?,?)`, 
             [libro.nombre, libro.autor, libro.categoria, libro['año-publicacion'], libro.ISBN]);
+
         res.json({"Id insertado": result.insertId}); 
     }
 
     async delete(req, res) {
         const {ISBN} = req.body;
+
+        // Validar ISBN
+        if (!/^\d{13}$/.test(ISBN)) {
+            return res.status(400).json({ message: 'El ISBN debe tener 13 dígitos numéricos' });
+        }
+
         const [result] = await pool.query(
             `DELETE FROM libros WHERE ISBN=(?)`, [ISBN]);
         res.json({"Registros eliminados": result.affectedRows}); 
